@@ -1,0 +1,7 @@
+# Docweaver Sources
+
+sources:
+  - key: docweaver
+    url: https://github.com/reliqarts/docweaver-docs
+  - key: scavenger
+    url: https://github.com/reliqarts/scavenger-docs

@@ -1,4 +1,4 @@
-//go:build unit
+//go:build unit || ci
 
 package docweaver_test
 
@@ -8,14 +8,10 @@ import (
 	"testing"
 )
 
-const (
-	defaultDocsDir string = "./tmp/docs"
-)
-
 func TestGetPublisher(t *testing.T) {
 	pub := docweaver.GetPublisher()
 
-	assert.Equal(t, defaultDocsDir, pub.GetDocsDir())
+	assert.Equal(t, "./tmp/docs", pub.GetDocsDir())
 }
 
 func TestGetPublisherWithDocsDir(t *testing.T) {
