@@ -2,17 +2,19 @@ package docweaver
 
 import (
 	"fmt"
+	"github.com/reliqarts/go-common"
 	yml "gopkg.in/yaml.v3"
 	"os"
 	"strings"
 )
 
 type Product struct {
-	Name        string
-	Description string
-	ImageUrl    string
-	Versions    []string
-	root        productRoot
+	Name          string
+	Description   string
+	ImageUrl      string
+	Versions      []string
+	LatestVersion string
+	root          productRoot
 }
 
 type Page struct {
@@ -57,7 +59,7 @@ func (p *Product) loadMeta() {
 	r := p.root
 
 	// find product meta using main versions
-	for _, ver := range intersection(p.Versions, mainVersions) {
+	for _, ver := range common.Intersection(p.Versions, mainVersions) {
 		meta, err = p.readMeta(ver)
 		if err != nil {
 			loggers.Err.Printf("Failed to read meta file from product `%s`, version `%s`. %s\n", r.Key, ver, err)

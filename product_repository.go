@@ -29,7 +29,7 @@ const (
 
 func GetRepository(dir string) ProductRepository {
 	if dir == "" {
-		dir = getConfiguredDocsDir()
+		dir = getDocsDir()
 	}
 	return &productRepository{dir: dir}
 }
@@ -97,16 +97,15 @@ func (pr *productRepository) FindProduct(productKey string) (*Product, error) {
 	return pr.newProduct(r, versions), nil
 }
 
-func (pr *productRepository) newProduct(r productRoot, versions []string) *Product {
-	product := Product{
-		Name:     strings.Title(r.Key),
-		Versions: versions,
-		root:     r,
+func (pr *productRepository) newProduct(r productRoot, versions []string) (product *Product) {
+	product = &Product{
+		Name:          strings.Title(r.Key),
+		Versions:      versions,
+		LatestVersion: latestVersion(versions),
+		root:          r,
 	}
-
 	product.loadMeta()
-
-	return &product
+	return
 }
 
 func (pr *productRepository) GetPage(productKey, version, pagePath string) (*Page, error) {

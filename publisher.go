@@ -41,7 +41,7 @@ var mainVersions = []string{versionMaster, versionMain}
 // GetPublisher returns the default instance of UpdaterPublisher.
 func GetPublisher() UpdaterPublisher {
 	return &publisher{
-		repo: &productRepository{getConfiguredDocsDir()},
+		repo: &productRepository{getDocsDir()},
 	}
 }
 
@@ -246,8 +246,8 @@ func (p *publisher) publishVersionAssets(pr productRoot, version string) error {
 	assetsDir := GetAssetsDir()
 	imgDirName := "images"
 
-	if assetsDir == "" {
-		loggers.Info.Printf("Assets directory is not configured. Skipping asset publication for `%s` version `%s`.\n", pr.Key, version)
+	if assetsDir == "" || assetsDir == getDocsDir() {
+		loggers.Info.Printf("Assets directory is not configured or is same as docs dir. Skipping asset publication for `%s` version `%s`.\n", pr.Key, version)
 		return nil
 	}
 

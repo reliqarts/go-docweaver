@@ -6,6 +6,8 @@ import (
 	"golang.org/x/net/html"
 	"log"
 	"os"
+	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -57,7 +59,7 @@ func GetLoggerSet() *loggerSet {
 
 // GetAssetsDir returns configured assets directory. env key: DW_ASSETS_DIR
 func GetAssetsDir() string {
-	return common.GetEnvOrDefault(EnvKeyAssetsDir, "")
+	return common.GetEnvOrDefault(EnvKeyAssetsDir, getDocsDir())
 }
 
 // GetRoutePrefix returns configured documentation route prefix. env key: DW_ROUTE_PREFIX
@@ -75,7 +77,7 @@ func GetSourcesFilePath() string {
 	return common.GetEnvOrDefault(EnvKeySourcesFile, defaultSourcesFile)
 }
 
-func getConfiguredDocsDir() string {
+func getDocsDir() string {
 	return common.GetEnvOrDefault(EnvKeyDocsDir, defaultDocumentationDir)
 }
 
@@ -112,30 +114,64 @@ func replaceLinks(productKey, version, content string) string {
 	return repl.Replace(content)
 }
 
-func intersection(s1, s2 []string) (inter []string) {
-	hash := make(map[string]bool)
-	for _, e := range s1 {
-		hash[e] = true
-	}
-	for _, e := range s2 {
-		// If elements present in the hashmap then append intersection list.
-		if hash[e] {
-			inter = append(inter, e)
+// sortVersions sorts a given slice of versions
+func sortVersions(versions []string) {
+	const highVal = 99999.99
+	sort.SliceStable(versions, func(i, j int) bool {
+		verI := strings.Split(versions[i], "-")[0]
+		verJ := strings.Split(versions[j], "-")[0]
+
+		if verI[0] == 'v' || verI[0] == 'V' {
+			verI = verI[1:]
 		}
-	}
-	//Remove duplicates from slice.
-	inter = removeDuplicates(inter)
-	return
+		if verJ[0] == 'v' || verJ[0] == 'V' {
+			verJ = verJ[1:]
+		}
+
+		jv, err := strconv.ParseFloat(verI, 32)
+		if err != nil {
+			jv = highVal
+		}
+		iv, err := strconv.ParseFloat(verJ, 32)
+		if err != nil {
+			iv = highVal
+		}
+		return jv < iv
+	})
 }
 
-//Remove duplicates from slice.
-func removeDuplicates(elements []string) (nodups []string) {
-	encountered := make(map[string]bool)
-	for _, element := range elements {
-		if !encountered[element] {
-			nodups = append(nodups, element)
-			encountered[element] = true
+func latestVersion(versions []string) (latest string) {
+	var vs []string
+
+	// focus on non-main versions
+	for _, v := range versions {
+		if v != versionMaster && v != versionMain {
+			vs = append(vs, v)
 		}
 	}
+	if len(vs) == 0 {
+		// no non-main versions exist, i.e. no version
+		return "N/A"
+	}
+
+	sortVersions(vs)
+	for i := len(vs) - 1; i >= 0; i-- {
+		verVal := vs[i]
+		if verVal[0] == 'v' || verVal[0] == 'V' {
+			verVal = verVal[1:]
+		}
+		_, err := strconv.ParseFloat(verVal, 32)
+		if err == nil {
+			latest = vs[i]
+			break
+		}
+	}
+
+	if latest == "" {
+		// pick the latest by alpha sort
+		sort.Strings(vs)
+		latest = vs[len(vs)-1]
+	}
+
 	return
 }

@@ -13,6 +13,8 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/reliqarts/go-common v0.0.4 h1:PnjoReoBTIECw5JPTmuK9bJoXyglITINwSmMtB3mKMI=
 github.com/reliqarts/go-common v0.0.4/go.mod h1:fnpMiZP/T02ilFvcVbEn8tlhh03LwcM3U5qCoGKv5qM=
+github.com/reliqarts/go-common v0.0.5 h1:aXmCTXBNCNLHpON41Hb8tyFYMr11JQtqgs0WPk8DXoc=
+github.com/reliqarts/go-common v0.0.5/go.mod h1:KUwvlj5JAZSA6aIXuPYRwWldokHBUWpTyKGBHZ88T5k=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5CcY=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
