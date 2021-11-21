@@ -3,7 +3,6 @@ package docweaver
 import (
 	"fmt"
 	cp "github.com/otiai10/copy"
-	"github.com/reliqarts/go-common"
 	"os"
 	"os/exec"
 	"strings"
@@ -108,7 +107,7 @@ func (p *publisher) publish(pr productRoot, shouldUpdate bool) error {
 func (p *publisher) publishProductVersion(pr productRoot, version string, update bool) error {
 	prFullPath := pr.filePath()
 	verPath := pr.versionFilePath(version)
-	tempNameSuffix := common.RandomString(6)
+	tempNameSuffix := "temp"
 	verPathTemp := fmt.Sprintf(verPath + "-" + tempNameSuffix)
 	tempVerPathExists := false
 
