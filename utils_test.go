@@ -21,6 +21,40 @@ func TestGetLoggerSet(t *testing.T) {
 	assert.Contains(t, loggerSet.Warn.Prefix(), "warn")
 }
 
+func TestReplaceLinks(t *testing.T) {
+	productKey := "prod-up"
+	testData := []struct {
+		version    string
+		content    string
+		expected   string
+	}{
+		{
+			version:  "2.0",
+			content:  "{{docs}}/something/somewhere",
+			expected: fmt.Sprintf("%s/%s/2.0/something/somewhere", GetRoutePrefix(), productKey),
+		},
+		{
+			version:    "2.0",
+			content:    "docs/{{version}}/something/somewhere",
+			expected:   fmt.Sprintf("%s/%s/2.0/something/somewhere", GetRoutePrefix(), productKey),
+		},
+		{
+			version:  "v5.0",
+			content:  "{{version}}/some-thing/somewhere",
+			expected: "v5.0/some-thing/somewhere",
+		},
+		{
+			version:  "6.0-alpha",
+			content:  "{{version}}/some-thing/somewhere",
+			expected: "6.0-alpha/some-thing/somewhere",
+		},
+	}
+
+	for _, td := range testData {
+		assert.Equal(t, td.expected, replaceLinks(productKey, td.version, td.content))
+	}
+}
+
 func TestSortVersions(t *testing.T) {
 	testData := []testStringSet{
 		{

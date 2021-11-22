@@ -34,6 +34,8 @@ func TestProductRepository_GetPage(t *testing.T) {
 			t.Fatal(err)
 		}
 
+		fmt.Printf("%v\n", page)
+
 		assert.Equal(t, "Product 1", page.Title)
 		assert.Equal(t, version, page.Version)
 		assert.Contains(t, page.Content, fmt.Sprintf("docs/%s/%s/", testProductKey, version))

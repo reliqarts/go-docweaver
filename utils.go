@@ -30,8 +30,8 @@ const (
 
 	defaultDocumentationDir  string = "./tmp/docs"
 	defaultVersion                  = versionMain
-	defaultRoutePrefix              = "docs"
-	defaultAssetsRoutePrefix        = "doc-assets"
+	defaultRoutePrefix              = "/docs"
+	defaultAssetsRoutePrefix        = "/doc-assets"
 	defaultSourcesFile              = "./doc-sources.yml"
 
 	metaFileName = ".docweaver.yml"
@@ -110,8 +110,9 @@ func replaceLinks(productKey, version, content string) string {
 		fmt.Sprintf("%s%s", "docs/", versionPlaceholder), linkReplacement,
 		versionPlaceholder, version,
 	)
+	dblSlashRepl := strings.NewReplacer("//", "/")
 
-	return repl.Replace(content)
+	return dblSlashRepl.Replace(repl.Replace(content))
 }
 
 // sortVersions sorts a given slice of versions

@@ -11,9 +11,11 @@ import (
 type Product struct {
 	Name          string
 	Description   string
+	BaseUrl       string
 	ImageUrl      string
 	Versions      []string
 	LatestVersion string
+	Index         *Page
 	root          productRoot
 }
 
@@ -22,6 +24,8 @@ type Page struct {
 	Title   string
 	Content string
 	Version string
+	Product *Product
+	Index   *Page
 }
 
 type productRoot struct {
@@ -48,8 +52,12 @@ func (p *productRoot) hasSource() bool {
 	return p.Source != ""
 }
 
-func (p *Product) GetKey() string {
+func (p *Product) Key() string {
 	return p.root.Key
+}
+
+func (p *Product) Url() string {
+	return fmt.Sprintf("%s/%s", p.BaseUrl, p.LatestVersion)
 }
 
 func (p *Product) loadMeta() {

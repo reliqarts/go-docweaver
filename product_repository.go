@@ -25,6 +25,7 @@ type productRepository struct {
 const (
 	defaultPagePath = "installation"
 	pageExt         = "md"
+	indexPath       = "documentation"
 )
 
 func GetRepository(dir string) ProductRepository {
@@ -98,10 +99,12 @@ func (pr *productRepository) FindProduct(productKey string) (*Product, error) {
 }
 
 func (pr *productRepository) newProduct(r productRoot, versions []string) (product *Product) {
+	latestV := latestVersion(versions)
 	product = &Product{
 		Name:          strings.Title(r.Key),
+		BaseUrl:       fmt.Sprintf("%s/%s", GetRoutePrefix(), r.Key),
+		LatestVersion: latestV,
 		Versions:      versions,
-		LatestVersion: latestVersion(versions),
 		root:          r,
 	}
 	product.loadMeta()
@@ -109,8 +112,6 @@ func (pr *productRepository) newProduct(r productRoot, versions []string) (produ
 }
 
 func (pr *productRepository) GetPage(productKey, version, pagePath string) (*Page, error) {
-	r := productRoot{ParentDir: pr.dir, Key: productKey}
-
 	if productKey == "" {
 		err := simpleError{err: "No product key provided."}
 		loggers.Err.Println(err)
@@ -125,6 +126,12 @@ func (pr *productRepository) GetPage(productKey, version, pagePath string) (*Pag
 		pagePath = defaultPagePath
 	}
 
+	r := productRoot{ParentDir: pr.dir, Key: productKey}
+	p, err := pr.FindProduct(productKey)
+	if err != nil {
+		return nil, simpleError{fmt.Sprintf("Failed to init product for page. %s", err)}
+	}
+
 	filePath := fmt.Sprintf("%s%c%s.%s", r.versionFilePath(version), os.PathSeparator, pagePath, pageExt)
 	md, err := os.ReadFile(filePath)
 	if err != nil {
@@ -134,11 +141,22 @@ func (pr *productRepository) GetPage(productKey, version, pagePath string) (*Pag
 
 	content := replaceLinks(productKey, version, string(markdown.ToHTML(md, nil, nil)))
 
+	var index *Page = nil
+	if pagePath != indexPath {
+		index, err = pr.GetPage(r.Key, version, indexPath)
+		if err != nil {
+			loggers.Warn.Printf("Failed to read product index for page (%s) from path `%s`.\n", pagePath, indexPath)
+			index = nil
+		}
+	}
+
 	return &Page{
 		UrlPath: pagePath,
 		Title:   getPageTitleFromHtml(content),
 		Content: content,
+		Product: p,
 		Version: version,
+		Index:   index,
 	}, nil
 }
 
