@@ -1,8 +1,13 @@
 package docweaver
 
 import (
+	"bytes"
 	"fmt"
-	"github.com/gomarkdown/markdown"
+	"github.com/yuin/goldmark"
+	emoji "github.com/yuin/goldmark-emoji"
+	"github.com/yuin/goldmark/extension"
+	"github.com/yuin/goldmark/parser"
+	"github.com/yuin/goldmark/renderer/html"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -135,11 +140,21 @@ func (pr *productRepository) GetPage(productKey, version, pagePath string) (*Pag
 	filePath := fmt.Sprintf("%s%c%s.%s", r.versionFilePath(version), os.PathSeparator, pagePath, pageExt)
 	md, err := os.ReadFile(filePath)
 	if err != nil {
-		loggers.Err.Printf("Failed to read product page from file path `%s`.\n", filePath)
+		loggers.Warn.Printf("Failed to read product page from file path `%s`.\n", filePath)
 		return nil, err
 	}
 
-	content := replaceLinks(productKey, version, string(markdown.ToHTML(md, nil, nil)))
+	var rawContent bytes.Buffer
+	err = goldmark.New(
+		goldmark.WithExtensions(extension.GFM, emoji.Emoji),
+		goldmark.WithParserOptions(parser.WithAutoHeadingID()),
+		goldmark.WithRendererOptions(html.WithHardWraps(), html.WithXHTML(), html.WithUnsafe()),
+	).Convert(md, &rawContent)
+	if err != nil {
+		return nil, err
+	}
+
+	content := replaceLinks(productKey, version, rawContent.String())
 
 	var index *Page = nil
 	if pagePath != indexPath {

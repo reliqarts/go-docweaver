@@ -5,6 +5,7 @@ import (
 	"github.com/reliqarts/go-common"
 	"golang.org/x/net/html"
 	"log"
+	"net/url"
 	"os"
 	"sort"
 	"strconv"
@@ -107,8 +108,11 @@ func replaceLinks(productKey, version, content string) string {
 	linkReplacement := fmt.Sprintf("%s/%s/%s", GetRoutePrefix(), productKey, version)
 	repl := strings.NewReplacer(
 		assetUrlPlaceholder, linkReplacement,
+		url.QueryEscape(assetUrlPlaceholder), linkReplacement,
 		fmt.Sprintf("%s%s", "docs/", versionPlaceholder), linkReplacement,
+		fmt.Sprintf("%s%s", "docs/", url.QueryEscape(versionPlaceholder)), linkReplacement,
 		versionPlaceholder, version,
+		url.QueryEscape(versionPlaceholder), version,
 	)
 	dblSlashRepl := strings.NewReplacer("//", "/")
 
