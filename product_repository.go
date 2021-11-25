@@ -14,13 +14,18 @@ import (
 	"strings"
 )
 
+type Cleaner interface {
+	CleanTempVersions() error
+}
+
 type ProductRepository interface {
-	GetDir() string
+	Cleaner
 	FindAllProducts() ([]Product, error)
 	FindProduct(productName string) (*Product, error)
-	ListProductKeys() ([]string, error)
+	GetDir() string
 	GetPage(productName, version, pagePath string) (*Page, error)
 	GetIndex(productName string) (*Page, error)
+	ListProductKeys() ([]string, error)
 }
 
 type productRepository struct {
@@ -96,24 +101,14 @@ func (pr *productRepository) FindProduct(productKey string) (*Product, error) {
 	for _, f := range files {
 		if f.IsDir() {
 			vt := f.Name()
+			if strings.Contains(vt, tempNameSuffix) {
+				continue
+			}
 			versions = append(versions, vt)
 		}
 	}
 
 	return pr.newProduct(r, versions), nil
-}
-
-func (pr *productRepository) newProduct(r productRoot, versions []string) (product *Product) {
-	latestV := latestVersion(versions)
-	product = &Product{
-		Name:          strings.Title(r.Key),
-		BaseUrl:       fmt.Sprintf("%s/%s", GetRoutePrefix(), r.Key),
-		LatestVersion: latestV,
-		Versions:      versions,
-		root:          r,
-	}
-	product.loadMeta()
-	return
 }
 
 func (pr *productRepository) GetPage(productKey, version, pagePath string) (*Page, error) {
@@ -177,4 +172,32 @@ func (pr *productRepository) GetPage(productKey, version, pagePath string) (*Pag
 
 func (pr *productRepository) GetIndex(productName string) (*Page, error) {
 	return pr.GetPage(productName, defaultVersion, defaultPagePath)
+}
+
+// CleanTempVersions removes all temporary documentation versions. Only returns the last error that occurred.
+func (pr *productRepository) CleanTempVersions() (lastErr error) {
+	products, err := pr.FindAllProducts()
+	if err != nil {
+		lastErr = err
+		return
+	}
+	for _, p := range products {
+		for _, ver := range p.Versions {
+			lastErr = removeDir(p.root.versionTempFilePath(ver))
+		}
+	}
+	return
+}
+
+func (pr *productRepository) newProduct(r productRoot, versions []string) (product *Product) {
+	latestV := latestVersion(versions)
+	product = &Product{
+		Name:          strings.Title(r.Key),
+		BaseUrl:       fmt.Sprintf("%s/%s", GetRoutePrefix(), r.Key),
+		LatestVersion: latestV,
+		Versions:      versions,
+		root:          r,
+	}
+	product.loadMeta()
+	return
 }

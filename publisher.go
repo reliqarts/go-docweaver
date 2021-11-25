@@ -13,6 +13,7 @@ type DocHandler interface {
 }
 
 type Publisher interface {
+	Cleaner
 	DocHandler
 	Publish(productKey string, source string, shouldUpdate bool)
 	// PublishFromSources publishes all documentation configured in sources file. i.e. env: DW_SOURCES_FILE
@@ -107,8 +108,7 @@ func (p *publisher) publish(pr productRoot, shouldUpdate bool) error {
 func (p *publisher) publishProductVersion(pr productRoot, version string, update bool) error {
 	prFullPath := pr.filePath()
 	verPath := pr.versionFilePath(version)
-	tempNameSuffix := "temp"
-	verPathTemp := fmt.Sprintf(verPath + "-" + tempNameSuffix)
+	verPathTemp := pr.versionTempFilePath(version)
 	tempVerPathExists := false
 
 	if _, err := os.Stat(prFullPath); os.IsNotExist(err) {
@@ -124,6 +124,7 @@ func (p *publisher) publishProductVersion(pr productRoot, version string, update
 		}
 
 		// temporarily rename existing version
+		_ = removeDir(verPathTemp)
 		if err := os.Rename(verPath, verPathTemp); err != nil {
 			loggers.Err.Printf("Failed to temporarily rename version filePath `%s` to `%s` for update. %s\n", verPath, verPathTemp, err)
 			return err
@@ -145,7 +146,7 @@ func (p *publisher) publishProductVersion(pr productRoot, version string, update
 
 	// remove temp. version filePath if exists
 	if tempVerPathExists {
-		if err := os.RemoveAll(verPathTemp); err != nil {
+		if err := removeDir(verPathTemp); err != nil {
 			loggers.Err.Printf("Failed to remove temporary version filePath `%s` after publishing. %s\n", verPathTemp, err)
 			return err
 		}
@@ -229,6 +230,11 @@ func (p *publisher) UpdateAll() {
 
 	loggers.Info.Println("Updating the following products:", productNames)
 	p.Update(productNames...)
+}
+
+// CleanTempVersions removes all temporary documentation versions. Only returns the last error that occurred.
+func (p *publisher) CleanTempVersions() (lastErr error) {
+	return p.repo.CleanTempVersions()
 }
 
 // getBVMErr generates a base version missing error with provided productName.

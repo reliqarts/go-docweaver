@@ -41,6 +41,8 @@ const (
 	versionMain         string = "main"
 	versionPlaceholder  string = "{{version}}"
 	assetUrlPlaceholder string = "{{docs}}"
+
+	tempNameSuffix string = "-temp"
 )
 
 var loggers = GetLoggerSet()
@@ -179,5 +181,16 @@ func latestVersion(versions []string) (latest string) {
 		latest = vs[len(vs)-1]
 	}
 
+	return
+}
+
+func removeDir(dir string) (error error) {
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		error = err
+		return
+	}
+	if err := os.RemoveAll(dir); err != nil {
+		error = err
+	}
 	return
 }

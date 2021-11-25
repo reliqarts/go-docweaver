@@ -18,11 +18,11 @@ func TestProductRepository_FindProduct(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	fmt.Println("Product:", product)
-
 	assert.Equal(t, expectedName, product.Name)
 	assert.Equal(t, "Simple test product.", product.Description)
 	assert.Contains(t, product.ImageUrl, fmt.Sprintf("%s/%s/main/", docweaver.GetAssetsRoutePrefix(), testProductKey))
+	assert.Contains(t, fmt.Sprintf("%s", product.Versions), "1.0")
+	assert.NotContains(t, fmt.Sprintf("%s", product.Versions), "2.0-temp")
 }
 
 func TestProductRepository_GetPage(t *testing.T) {
