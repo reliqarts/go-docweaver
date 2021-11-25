@@ -6,7 +6,7 @@ import (
 )
 
 type source struct {
-	Key    string
+	Key string
 	Url string
 }
 type sourceConfig struct {

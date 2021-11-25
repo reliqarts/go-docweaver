@@ -38,6 +38,9 @@ func TestProductRepository_GetPage(t *testing.T) {
 
 		assert.Equal(t, "Product 1", page.Title)
 		assert.Equal(t, version, page.Version)
-		assert.Contains(t, page.Content, fmt.Sprintf("docs/%s/%s/", testProductKey, version))
+		assert.Contains(t, page.Content, fmt.Sprintf("/docs/%s/%s/", testProductKey, version))
+		assert.Contains(t, page.Content, "href=\"http://iamreliq.com\"")
+		assert.Contains(t, page.Index.Content, fmt.Sprintf("href=\"/docs/%s/%s/support\"", testProductKey, version))
+		assert.Contains(t, page.Index.Content, fmt.Sprintf("href=\"/docs/%s/%s/installation\"", testProductKey, version))
 	}
 }

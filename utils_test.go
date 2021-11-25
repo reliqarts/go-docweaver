@@ -24,9 +24,9 @@ func TestGetLoggerSet(t *testing.T) {
 func TestReplaceLinks(t *testing.T) {
 	productKey := "prod-up"
 	testData := []struct {
-		version    string
-		content    string
-		expected   string
+		version  string
+		content  string
+		expected string
 	}{
 		{
 			version:  "2.0",
@@ -34,9 +34,9 @@ func TestReplaceLinks(t *testing.T) {
 			expected: fmt.Sprintf("%s/%s/2.0/something/somewhere", GetRoutePrefix(), productKey),
 		},
 		{
-			version:    "2.0",
-			content:    "docs/{{version}}/something/somewhere",
-			expected:   fmt.Sprintf("%s/%s/2.0/something/somewhere", GetRoutePrefix(), productKey),
+			version:  "2.0",
+			content:  "docs/{{version}}/something/somewhere",
+			expected: fmt.Sprintf("%s/%s/2.0/something/somewhere", GetRoutePrefix(), productKey),
 		},
 		{
 			version:  "v5.0",

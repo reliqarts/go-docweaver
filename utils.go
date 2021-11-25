@@ -105,7 +105,8 @@ func getPageTitleFromHtml(content string) string {
 }
 
 func replaceLinks(productKey, version, content string) string {
-	linkReplacement := fmt.Sprintf("%s/%s/%s", GetRoutePrefix(), productKey, version)
+	routePrefix := GetRoutePrefix()
+	linkReplacement := fmt.Sprintf("%s/%s/%s", routePrefix, productKey, version)
 	repl := strings.NewReplacer(
 		assetUrlPlaceholder, linkReplacement,
 		url.QueryEscape(assetUrlPlaceholder), linkReplacement,
@@ -114,9 +115,9 @@ func replaceLinks(productKey, version, content string) string {
 		versionPlaceholder, version,
 		url.QueryEscape(versionPlaceholder), version,
 	)
-	dblSlashRepl := strings.NewReplacer("//", "/")
+	slashPrefixRepl := strings.NewReplacer(fmt.Sprintf("=\"/%s", routePrefix), fmt.Sprintf("=\"%s", routePrefix))
 
-	return dblSlashRepl.Replace(repl.Replace(content))
+	return slashPrefixRepl.Replace(repl.Replace(content))
 }
 
 // sortVersions sorts a given slice of versions
