@@ -29,18 +29,20 @@ func TestProductRepository_GetPage(t *testing.T) {
 	versions := []string{"main", "1.0"}
 
 	for _, version := range versions {
-		page, err := repo.GetPage(testProductKey, version, "installation")
-		if err != nil {
-			t.Fatal(err)
-		}
+		t.Run(version, func(t *testing.T) {
+			page, err := repo.GetPage(testProductKey, version, "installation")
+			if err != nil {
+				t.Fatal(err)
+			}
 
-		fmt.Printf("%v\n", page)
+			fmt.Printf("%v\n", page)
 
-		assert.Equal(t, "Product 1", page.Title)
-		assert.Equal(t, version, page.Version)
-		assert.Contains(t, page.Content, fmt.Sprintf("/docs/%s/%s/", testProductKey, version))
-		assert.Contains(t, page.Content, "href=\"http://iamreliq.com\"")
-		assert.Contains(t, page.Index.Content, fmt.Sprintf("href=\"/docs/%s/%s/support\"", testProductKey, version))
-		assert.Contains(t, page.Index.Content, fmt.Sprintf("href=\"/docs/%s/%s/installation\"", testProductKey, version))
+			assert.Equal(t, "Product 1", page.Title)
+			assert.Equal(t, version, page.Version)
+			assert.Contains(t, page.Content, fmt.Sprintf("/docs/%s/%s/", testProductKey, version))
+			assert.Contains(t, page.Content, "href=\"http://iamreliq.com\"")
+			assert.Contains(t, page.Index.Content, fmt.Sprintf("href=\"/docs/%s/%s/support\"", testProductKey, version))
+			assert.Contains(t, page.Index.Content, fmt.Sprintf("href=\"/docs/%s/%s/installation\"", testProductKey, version))
+		})
 	}
 }

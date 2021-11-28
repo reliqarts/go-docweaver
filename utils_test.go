@@ -9,6 +9,7 @@ import (
 )
 
 type testStringSet struct {
+	key      string
 	input    []string
 	expected []string
 }
@@ -58,23 +59,28 @@ func TestReplaceLinks(t *testing.T) {
 func TestSortVersions(t *testing.T) {
 	testData := []testStringSet{
 		{
+			key:      "1",
 			input:    []string{"1.0", "2.0-beta", "master", "main", "10.0", "20", "2"},
 			expected: []string{"1.0", "2.0-beta", "2", "10.0", "20", "master", "main"},
 		},
 		{
+			key:      "2",
 			input:    []string{"1.0", "3.0-beta", "main", "10.0", "20.5", "200"},
 			expected: []string{"1.0", "3.0-beta", "10.0", "20.5", "200", "main"},
 		},
 		{
+			key:      "3",
 			input:    []string{"1.0", "3.0-beta", "main", "10.0", "0.0200"},
 			expected: []string{"0.0200", "1.0", "3.0-beta", "10.0", "main"},
 		},
 	}
 
 	for _, td := range testData {
-		sortVersions(td.input)
+		t.Run(td.key, func(t *testing.T) {
+			sortVersions(td.input)
 
-		assert.Equal(t, fmt.Sprintf("%s", td.expected), fmt.Sprintf("%s", td.input))
+			assert.Equal(t, fmt.Sprintf("%s", td.expected), fmt.Sprintf("%s", td.input))
+		})
 	}
 }
 
@@ -106,8 +112,10 @@ func TestLatestVersion(t *testing.T) {
 	}
 
 	for _, td := range testData {
-		result := latestVersion(td.input)
+		t.Run(td.expected, func(t *testing.T) {
+			result := latestVersion(td.input)
 
-		assert.Equal(t, td.expected, result)
+			assert.Equal(t, td.expected, result)
+		})
 	}
 }

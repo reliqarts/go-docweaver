@@ -194,3 +194,7 @@ func removeDir(dir string) (error error) {
 	}
 	return
 }
+
+func versionTempName(version string) string {
+	return fmt.Sprintf("%s%s", version, tempNameSuffix)
+}

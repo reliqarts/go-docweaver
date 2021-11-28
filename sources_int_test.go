@@ -27,7 +27,9 @@ func TestReadSources(t *testing.T) {
 	}
 
 	for _, es := range expectedSources {
-		assert.Contains(t, fmt.Sprintf("%s", sources), fmt.Sprintf("%s %s", es.Key, es.Url))
+		t.Run(es.Key, func(t *testing.T) {
+			assert.Contains(t, fmt.Sprintf("%s", sources), fmt.Sprintf("%s %s", es.Key, es.Url))
+		})
 	}
 
 	assert.NotContains(t, fmt.Sprintf("%s", sources), "sources")

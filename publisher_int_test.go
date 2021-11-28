@@ -30,9 +30,11 @@ func TestPublisher_Publish(t *testing.T) {
 	}
 
 	for _, v := range versionsToCheck {
-		if _, err := os.Stat(productPath + "/" + v); os.IsNotExist(err) {
-			t.Fatalf("Product version not found `%s`", productPath+"/"+v)
-		}
+		t.Run(v, func(t *testing.T) {
+			if _, err := os.Stat(productPath + "/" + v); os.IsNotExist(err) {
+				t.Fatalf("Product version not found `%s`", productPath+"/"+v)
+			}
+		})
 	}
 
 	if err := os.RemoveAll(productPath); err != nil {

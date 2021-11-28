@@ -183,7 +183,7 @@ func (pr *productRepository) CleanTempVersions() (lastErr error) {
 	}
 	for _, p := range products {
 		for _, ver := range p.Versions {
-			lastErr = removeDir(p.root.versionTempFilePath(ver))
+			lastErr = removeDir(p.root.versionFilePath(versionTempName(ver)))
 		}
 	}
 	return

@@ -107,9 +107,9 @@ func (p *publisher) publish(pr productRoot, shouldUpdate bool) error {
 
 func (p *publisher) publishProductVersion(pr productRoot, version string, update bool) error {
 	prFullPath := pr.filePath()
+	versionTemp := versionTempName(version)
 	verPath := pr.versionFilePath(version)
-	verPathTemp := pr.versionTempFilePath(version)
-	tempVerPathExists := false
+	verPathTemp := pr.versionFilePath(versionTemp)
 
 	if _, err := os.Stat(prFullPath); os.IsNotExist(err) {
 		if err = os.MkdirAll(prFullPath, 0755); err != nil {
@@ -119,37 +119,32 @@ func (p *publisher) publishProductVersion(pr productRoot, version string, update
 
 	if _, err := os.Stat(verPath); !os.IsNotExist(err) {
 		if !update {
-			loggers.Info.Printf("Version `%s` already exists for product `%s`. Update not requested. Skipped.\n", version, pr.Key)
+			loggers.Info.Printf(
+				"Version `%s` already exists for product `%s`. Update not requested. Skipped.\n",
+				version,
+				pr.Key,
+			)
 			return nil
 		}
-
-		// temporarily rename existing version
-		_ = removeDir(verPathTemp)
-		if err := os.Rename(verPath, verPathTemp); err != nil {
-			loggers.Err.Printf("Failed to temporarily rename version filePath `%s` to `%s` for update. %s\n", verPath, verPathTemp, err)
-			return err
-		}
-		tempVerPathExists = true
 	}
 
+	_ = removeDir(verPathTemp)
 	loggers.Info.Printf("Executing version clone `%s` into: `%s`\n", version, prFullPath)
-	cmd := exec.Command("git", "clone", "--branch", version, pr.Source, version)
+	cmd := exec.Command("git", "clone", "--branch", version, pr.Source, versionTemp)
 	cmd.Dir = pr.filePath()
 	if _, err := cmd.Output(); err != nil {
 		loggers.Err.Printf("Failed to execute version clone `%s` into: `%s`. %s\n", version, prFullPath, err)
 		return err
 	}
 
-	if err := p.publishVersionAssets(pr, version); err != nil {
-		loggers.Err.Printf("Failed to publish assets for version `%s`. %s\n", version, err)
+	_ = removeDir(verPath)
+	if err := os.Rename(verPathTemp, verPath); err != nil {
+		loggers.Err.Printf("Failed to rename version from temp file `%s` to `%s` after cloning update. %s\n", verPathTemp, verPath, err)
+		return err
 	}
 
-	// remove temp. version filePath if exists
-	if tempVerPathExists {
-		if err := removeDir(verPathTemp); err != nil {
-			loggers.Err.Printf("Failed to remove temporary version filePath `%s` after publishing. %s\n", verPathTemp, err)
-			return err
-		}
+	if err := p.publishVersionAssets(pr, version); err != nil {
+		loggers.Err.Printf("Failed to publish assets for version `%s`. %s\n", version, err)
 	}
 
 	return nil

@@ -48,10 +48,6 @@ func (p *productRoot) versionFilePath(version string) string {
 	return fmt.Sprintf("%s%c%s", p.filePath(), os.PathSeparator, version)
 }
 
-func (p *productRoot) versionTempFilePath(version string) string {
-	return fmt.Sprintf("%s%s", p.versionFilePath(version), tempNameSuffix)
-}
-
 func (p *productRoot) hasSource() bool {
 	return p.Source != ""
 }
