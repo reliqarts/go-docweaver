@@ -173,6 +173,6 @@ func Documentation() gin.HandlerFunc {
 
 </details>
 
-&nbsp;
+---
 
 :beers: cheers
