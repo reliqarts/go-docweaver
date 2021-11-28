@@ -1,4 +1,4 @@
-# Docweaver
+# Docweaver (Go)
 
 An easy-to-use product documentation package in Golang.
 
