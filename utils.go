@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/reliqarts/go-common"
 	"golang.org/x/net/html"
-	"log"
+	goLog "log"
 	"net/url"
 	"os"
 	"sort"
@@ -13,14 +13,23 @@ import (
 )
 
 type loggerSet struct {
-	Err  *log.Logger
-	Info *log.Logger
-	Warn *log.Logger
+	Err  *goLog.Logger
+	Info *goLog.Logger
+	Warn *goLog.Logger
 }
 
+type logLevel int
 type simpleError struct {
 	err string
 }
+
+// log levels
+const (
+	lPanic logLevel = iota
+	lError
+	lWarn
+	lInfo
+)
 
 const (
 	EnvKeyDocsDir           string = "DW_DOCS_DIR"            // Docs directory environment key.
@@ -28,14 +37,16 @@ const (
 	EnvKeyRoutePrefix       string = "DW_ROUTE_PREFIX"        // Route prefix environment key.
 	EnvKeyAssetsRoutePrefix string = "DW_ASSETS_ROUTE_PREFIX" // Assets route prefix environment key.
 	EnvKeySourcesFile       string = "DW_SOURCES_FILE"        // Sources file environment key.
+	EnvKeyShowLogs          string = "DW_SHOW_LOGS"           // Show logs environment key.
 
 	defaultDocumentationDir  string = "./tmp/docs"
 	defaultVersion                  = versionMain
 	defaultRoutePrefix              = "/docs"
 	defaultAssetsRoutePrefix        = "/doc-assets"
 	defaultSourcesFile              = "./doc-sources.yml"
+	defaultShowLogs                 = "true"
 
-	metaFileName = ".docweaver.yml"
+	metaFileName string = ".docweaver.yml"
 
 	versionMaster       string = "master"
 	versionMain         string = "main"
@@ -45,18 +56,22 @@ const (
 	tempNameSuffix string = "-temp"
 )
 
-var loggers = GetLoggerSet()
+var loggers = getLoggerSet()
+
+func (l logLevel) String() string {
+	return fmt.Sprintf("%d", l)
+}
 
 func (e simpleError) Error() string {
 	return e.err
 }
 
-// GetLoggerSet returns configured loggers for package.
-func GetLoggerSet() *loggerSet {
+// getLoggerSet returns configured loggers for package.
+func getLoggerSet() *loggerSet {
 	return &loggerSet{
-		Err:  log.New(os.Stdout, "[Dw][err] ", log.Ldate|log.Ltime),
-		Info: log.New(os.Stdout, "[Dw][info] ", log.Ldate|log.Ltime),
-		Warn: log.New(os.Stdout, "[Dw][warn] ", log.Ldate|log.Ltime),
+		Err:  goLog.New(os.Stdout, "[Dw][err] ", goLog.Ldate|goLog.Ltime),
+		Info: goLog.New(os.Stdout, "[Dw][info] ", goLog.Ldate|goLog.Ltime),
+		Warn: goLog.New(os.Stdout, "[Dw][warn] ", goLog.Ldate|goLog.Ltime),
 	}
 }
 
@@ -197,4 +212,38 @@ func removeDir(dir string) (error error) {
 
 func versionTempName(version string) string {
 	return fmt.Sprintf("%s%s", version, tempNameSuffix)
+}
+
+func showLogs() bool {
+	sl, err := strconv.ParseBool(common.GetEnvOrDefault(EnvKeyShowLogs, defaultShowLogs))
+	if err != nil {
+		return false
+	}
+	return sl
+}
+
+// log writes logs via one of the configured loggers via Printf.
+func log(level logLevel, format string, v ...interface{}) {
+	if !showLogs() {
+		return
+	}
+	if len(v) == 0 {
+		format += "\n"
+	}
+
+	switch level {
+	case lPanic:
+		loggers.Err.Panicf(format, v...)
+	case lError:
+		loggers.Err.Printf(format, v...)
+		break
+	case lWarn:
+		loggers.Warn.Printf(format, v...)
+		break
+	case lInfo:
+		loggers.Info.Printf(format, v...)
+		break
+	default:
+		loggers.Warn.Printf("Log level (%s) is not configured.\n", level)
+	}
 }

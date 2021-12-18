@@ -114,15 +114,15 @@ func (pr *productRepository) FindProduct(productKey string) (*Product, error) {
 func (pr *productRepository) GetPage(productKey, version, pagePath string) (*Page, error) {
 	if productKey == "" {
 		err := simpleError{err: "No product key provided."}
-		loggers.Err.Println(err)
+		log(lError, err.Error())
 		return nil, err
 	}
 	if version == "" {
-		loggers.Info.Printf("Using default version (%s) for product `%s`, page path: `%s`.\n", defaultVersion, productKey, pagePath)
+		log(lInfo, "Using default version (%s) for product `%s`, page path: `%s`.\n", defaultVersion, productKey, pagePath)
 		version = defaultVersion
 	}
 	if pagePath == "" {
-		loggers.Info.Printf("Using default page path (%s) for product `%s`, version: `%s`.\n", defaultPagePath, productKey, version)
+		log(lInfo, "Using default page path (%s) for product `%s`, version: `%s`.\n", defaultPagePath, productKey, version)
 		pagePath = defaultPagePath
 	}
 
@@ -135,7 +135,7 @@ func (pr *productRepository) GetPage(productKey, version, pagePath string) (*Pag
 	filePath := fmt.Sprintf("%s%c%s.%s", r.versionFilePath(version), os.PathSeparator, pagePath, pageExt)
 	md, err := os.ReadFile(filePath)
 	if err != nil {
-		loggers.Warn.Printf("Failed to read product page from file path `%s`.\n", filePath)
+		log(lWarn, "Failed to read product page from file path `%s`.\n", filePath)
 		return nil, err
 	}
 
@@ -155,7 +155,7 @@ func (pr *productRepository) GetPage(productKey, version, pagePath string) (*Pag
 	if pagePath != indexPath {
 		index, err = pr.GetPage(r.Key, version, indexPath)
 		if err != nil {
-			loggers.Warn.Printf("Failed to read product index for page (%s) from path `%s`.\n", pagePath, indexPath)
+			log(lWarn, "Failed to read product index for page (%s) from path `%s`.\n", pagePath, indexPath)
 			index = nil
 		}
 	}

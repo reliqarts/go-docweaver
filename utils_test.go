@@ -15,7 +15,7 @@ type testStringSet struct {
 }
 
 func TestGetLoggerSet(t *testing.T) {
-	loggerSet := GetLoggerSet()
+	loggerSet := getLoggerSet()
 
 	assert.Contains(t, loggerSet.Info.Prefix(), "info")
 	assert.Contains(t, loggerSet.Err.Prefix(), "err")

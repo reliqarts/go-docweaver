@@ -53,7 +53,7 @@ func GetPublisherWithDocsDir(docsDir string) UpdaterPublisher {
 func (p *publisher) Publish(productKey string, source string, shouldUpdate bool) {
 	err := p.publish(productRoot{ParentDir: p.repo.GetDir(), Key: productKey, Source: source}, shouldUpdate)
 	if err == nil {
-		loggers.Info.Printf("Successfully published product: `%s`.", productKey)
+		log(lInfo, "Successfully published product: `%s`.", productKey)
 	}
 }
 
@@ -76,8 +76,8 @@ func (p *publisher) PublishFromSources() (int, error) {
 
 func (p *publisher) publish(pr productRoot, shouldUpdate bool) error {
 	baseVersion := ""
-	loggers.Info.Printf("Publishing product: `%s`\n", pr.Key)
-	loggers.Info.Println("Product root:", pr)
+	log(lInfo, "Publishing product: `%s`\n", pr.Key)
+	log(lInfo, "Product root: %s\n", pr)
 
 	for _, mv := range mainVersions {
 		if err := p.publishProductVersion(pr, mv, true); err == nil {
@@ -92,13 +92,13 @@ func (p *publisher) publish(pr productRoot, shouldUpdate bool) error {
 
 	tags, err := p.listProductTags(pr, baseVersion)
 	if err != nil {
-		loggers.Err.Printf("Failed to list tags. %s\n", err)
+		log(lError, "Failed to list tags. %s\n", err)
 		return err
 	}
 
 	for _, tag := range tags {
 		if err := p.publishProductVersion(pr, tag, shouldUpdate); err != nil {
-			loggers.Warn.Printf("Failed to publish/update Tag `%s`.", tag)
+			log(lWarn, "Failed to publish/update Tag `%s`.", tag)
 		}
 	}
 
@@ -119,7 +119,8 @@ func (p *publisher) publishProductVersion(pr productRoot, version string, update
 
 	if _, err := os.Stat(verPath); !os.IsNotExist(err) {
 		if !update {
-			loggers.Info.Printf(
+			log(
+				lInfo,
 				"Version `%s` already exists for product `%s`. Update not requested. Skipped.\n",
 				version,
 				pr.Key,
@@ -129,22 +130,22 @@ func (p *publisher) publishProductVersion(pr productRoot, version string, update
 	}
 
 	_ = removeDir(verPathTemp)
-	loggers.Info.Printf("Executing version clone `%s` into: `%s`\n", version, prFullPath)
+	log(lInfo, "Executing version clone `%s` into: `%s`\n", version, prFullPath)
 	cmd := exec.Command("git", "clone", "--branch", version, pr.Source, versionTemp)
 	cmd.Dir = pr.filePath()
 	if _, err := cmd.Output(); err != nil {
-		loggers.Err.Printf("Failed to execute version clone `%s` into: `%s`. %s\n", version, prFullPath, err)
+		log(lError, "Failed to execute version clone `%s` into: `%s`. %s\n", version, prFullPath, err)
 		return err
 	}
 
 	_ = removeDir(verPath)
 	if err := os.Rename(verPathTemp, verPath); err != nil {
-		loggers.Err.Printf("Failed to rename version from temp file `%s` to `%s` after cloning update. %s\n", verPathTemp, verPath, err)
+		log(lError, "Failed to rename version from temp file `%s` to `%s` after cloning update. %s\n", verPathTemp, verPath, err)
 		return err
 	}
 
 	if err := p.publishVersionAssets(pr, version); err != nil {
-		loggers.Err.Printf("Failed to publish assets for version `%s`. %s\n", version, err)
+		log(lError, "Failed to publish assets for version `%s`. %s\n", version, err)
 	}
 
 	return nil
@@ -152,12 +153,12 @@ func (p *publisher) publishProductVersion(pr productRoot, version string, update
 
 func (p *publisher) listProductTags(pr productRoot, baseVersion string) ([]string, error) {
 	var tags []string
-	loggers.Info.Printf("Listing tags for product `%s` using base version `%s`.\n", pr.Key, baseVersion)
+	log(lInfo, "Listing tags for product `%s` using base version `%s`.\n", pr.Key, baseVersion)
 	cmd := exec.Command("git", "tag", "-l")
 	cmd.Dir = pr.versionFilePath(baseVersion)
 	out, err := cmd.Output()
 	if err != nil {
-		loggers.Err.Printf("Failed to list tags for product `%s` using base version `%s`.\n", pr.Key, baseVersion)
+		log(lError, "Failed to list tags for product `%s` using base version `%s`.\n", pr.Key, baseVersion)
 		return nil, err
 	}
 
@@ -172,7 +173,7 @@ func (p *publisher) listProductTags(pr productRoot, baseVersion string) ([]strin
 
 func (p *publisher) Update(productKeys ...string) {
 	for _, productName := range productKeys {
-		loggers.Info.Printf("Updating product: `%s`\n", productName)
+		log(lInfo, "Updating product: `%s`\n", productName)
 		pr := productRoot{ParentDir: p.repo.GetDir(), Key: productName}
 		baseVersion := ""
 		source := ""
@@ -185,7 +186,7 @@ func (p *publisher) Update(productKeys ...string) {
 		}
 
 		if baseVersion == "" {
-			loggers.Err.Println(p.getBVMErr(productName))
+			log(lError, p.getBVMErr(productName).Error())
 			continue
 		}
 
@@ -193,7 +194,7 @@ func (p *publisher) Update(productKeys ...string) {
 		cmd.Dir = pr.versionFilePath(baseVersion)
 		out, err := cmd.Output()
 		if err != nil {
-			loggers.Err.Printf("Failed to determine fetch URL of origin for product `%s` using base version `%s`. %s\n", pr.Key, baseVersion, err)
+			log(lError, "Failed to determine fetch URL of origin for product `%s` using base version `%s`. %s\n", pr.Key, baseVersion, err)
 			return
 		}
 		outSplit := strings.Split(string(out), ": ")
@@ -201,14 +202,14 @@ func (p *publisher) Update(productKeys ...string) {
 			source = strings.TrimSpace(outSplit[1])
 		}
 		if source == "" {
-			loggers.Err.Printf("Could not determine source for product `%s`.\n", pr.Key)
+			log(lError, "Could not determine source for product `%s`.\n", pr.Key)
 			return
 		}
 		pr.Source = source
 
 		err = p.publish(pr, true)
 		if err == nil {
-			loggers.Info.Printf("Successfully updated product: `%s`.", productName)
+			log(lInfo, "Successfully updated product: `%s`.", productName)
 		}
 	}
 }
@@ -216,14 +217,14 @@ func (p *publisher) Update(productKeys ...string) {
 func (p *publisher) UpdateAll() {
 	productNames, err := p.repo.ListProductKeys()
 	if err != nil {
-		loggers.Err.Println(err.Error())
+		log(lError, err.Error())
 	}
 	if len(productNames) == 0 {
-		loggers.Info.Println("No products found to update.")
+		log(lInfo, "No products found to update.")
 		return
 	}
 
-	loggers.Info.Println("Updating the following products:", productNames)
+	log(lInfo, "Updating the following products:", productNames)
 	p.Update(productNames...)
 }
 
@@ -247,12 +248,12 @@ func (p *publisher) publishVersionAssets(pr productRoot, version string) error {
 	imgDirName := "images"
 
 	if assetsDir == "" || assetsDir == getDocsDir() {
-		loggers.Info.Printf("Assets directory is not configured or is same as docs dir. Skipping asset publication for `%s` version `%s`.\n", pr.Key, version)
+		log(lInfo, "Assets directory is not configured or is same as docs dir. Skipping asset publication for `%s` version `%s`.\n", pr.Key, version)
 		return nil
 	}
 
 	targetDir := fmt.Sprintf("%s%c%s%c%s", assetsDir, os.PathSeparator, pr.Key, os.PathSeparator, version)
-	loggers.Info.Printf("Publishing assets for version `%s`. Target dir: `%s`\n", version, targetDir)
+	log(lInfo, "Publishing assets for version `%s`. Target dir: `%s`\n", version, targetDir)
 
 	// publish images
 	imgSrcDir := fmt.Sprintf("%s%c%s", vPath, os.PathSeparator, imgDirName)

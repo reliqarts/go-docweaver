@@ -33,6 +33,7 @@ DW_ASSETS_DIR=./tmp/doc-assets       # Where documentation assets should be acce
 DW_ROUTE_PREFIX=docs                 # Documentation route prefix.
 DW_ASSETS_ROUTE_PREFIX=doc-assets    # Route prefix for assets.
 DW_SOURCES_FILE=./doc-sources.yml    # Sources file location.
+DW_SHOW_LOGS=true                    # Whether logs should be printed.
 ```
 
 Example files:
