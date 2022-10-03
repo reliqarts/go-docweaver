@@ -70,7 +70,7 @@ func (p *Product) loadMeta() {
 	for _, ver := range common.Intersection(p.Versions, mainVersions) {
 		meta, err = p.readMeta(ver)
 		if err != nil {
-			log(lError, "Failed to read meta file from product `%s`, version `%s`. %s\n", r.Key, ver, err)
+			log(lError, "Failed to read meta file from product \"%s\", version \"%s\". %s\n", r.Key, ver, err)
 		}
 		if meta != nil {
 			mainVersion = ver
