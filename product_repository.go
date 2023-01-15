@@ -8,7 +8,8 @@ import (
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/renderer/html"
-	"io/ioutil"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 	"os"
 	"os/exec"
 	"strings"
@@ -93,12 +94,12 @@ func (pr *productRepository) FindProduct(productKey string) (*Product, error) {
 	r := productRoot{ParentDir: pr.dir, Key: productKey}
 	var versions []string
 
-	files, err := ioutil.ReadDir(r.filePath())
+	entries, err := os.ReadDir(r.filePath())
 	if err != nil {
 		return nil, err
 	}
 
-	for _, f := range files {
+	for _, f := range entries {
 		if f.IsDir() {
 			vt := f.Name()
 			if strings.Contains(vt, tempNameSuffix) {
@@ -192,7 +193,7 @@ func (pr *productRepository) CleanTempVersions() (lastErr error) {
 func (pr *productRepository) newProduct(r productRoot, versions []string) (product *Product) {
 	latestV := latestVersion(versions)
 	product = &Product{
-		Name:          strings.Title(r.Key),
+		Name:          cases.Title(language.English).String(r.Key),
 		BaseUrl:       fmt.Sprintf("%s/%s", GetRoutePrefix(), r.Key),
 		LatestVersion: latestV,
 		Versions:      versions,
