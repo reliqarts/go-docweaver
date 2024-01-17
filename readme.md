@@ -12,6 +12,7 @@ PHP/Laravel version is available [here](https://github.com/reliqarts/laravel-doc
 [![Build Status](https://github.com/reliqarts/go-docweaver/workflows/CI/badge.svg)](https://github.com/reliqarts/go-docweaver/actions?query=workflow:CI)
 [![codecov](https://codecov.io/gh/reliqarts/go-docweaver/branch/main/graph/badge.svg?token=MmlJXECSRF)](https://codecov.io/gh/reliqarts/go-docweaver)
 [![https://goreportcard.com/report/github.com/reliqarts/go-docweaver](https://goreportcard.com/badge/github.com/reliqarts/go-docweaver)](https://goreportcard.com/report/github.com/reliqarts/go-docweaver)
+[![Maintainability](https://api.codeclimate.com/v1/badges/6acc07155660d6ef5468/maintainability)](https://codeclimate.com/github/reliqarts/go-docweaver/maintainability)
 
 ---
 
