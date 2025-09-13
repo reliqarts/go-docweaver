@@ -3,6 +3,10 @@ package docweaver
 import (
 	"bytes"
 	"fmt"
+	"os"
+	"os/exec"
+	"strings"
+
 	"github.com/yuin/goldmark"
 	emoji "github.com/yuin/goldmark-emoji"
 	"github.com/yuin/goldmark/extension"
@@ -10,9 +14,6 @@ import (
 	"github.com/yuin/goldmark/renderer/html"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
-	"os"
-	"os/exec"
-	"strings"
 )
 
 type Cleaner interface {
@@ -77,6 +78,11 @@ func (pr *productRepository) ListProductKeys() ([]string, error) {
 
 	out, err := cmd.Output()
 	if err != nil {
+		if strings.Contains(err.Error(), "no such file or directory") {
+			log(lWarn, "Docs directory `%s` does not exist.\n", pr.dir)
+			return productNames, nil
+		}
+
 		return productNames, simpleError{fmt.Sprintf("Failed to list all products in docs dir: ``. %s\n", err)}
 	}
 
